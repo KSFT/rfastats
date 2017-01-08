@@ -29,14 +29,14 @@ def getvotes(candidate):
 
 def processvotes(text):
     lines = text.split('\n')
-    votes = {}
+    votes = []
     for line in lines:
         try:
             author = re.findall(r'\[\[User(?: talk)?:([^][{}|#<>%+?]+)(?:|[^][]+)?\]\]', line)[-1]
             bold = re.findall("#\s*'''(.*?)'''", line)[0]
             comment = re.split(r'\[\[User( talk)?:{}(|[^][]+)?\]\]'.format(re.escape(author)), re.split("#\s*'''.*?'''", line)[1])[0]
             timestamp = time.strptime(re.findall('\d\d:\d\d, \d [A-Z][a-z]+ \d\d\d\d', line)[-1], '%H:%M, %d %B %Y')
-            votes[author] = [timestamp, bold, comment]
+            votes.append([author, bold, comment, timestamp])
         except IndexError:
             continue
     return votes
@@ -59,12 +59,13 @@ if candidates:
             print ('Support', 'Oppose', 'Neutral')[i]
             print '</h3>'
             print '<table>'
-            for voter in votes[i]:
+            recentvotes = sorted(votes[i], key = lambda x:x[3], reverse = True)[:10]
+            for vote in recentvotes:
                 print '<tr>'
-                print '<td>{}</td>'.format(voter)
-                print '<td>{}</td>'.format(votes[i][voter][2].encode('utf-8'))
-                print '<td>{}</td>'.format(votes[i][voter][1])
-                print '<td>{}</td>'.format(time.strftime('%H:%M, %d %B %Y',votes[i][voter][0]))
+                print '<td>{}</td>'.format(vote[0])
+                print '<td>{}</td>'.format(vote[1])
+                print '<td>{}</td>'.format(vote[2].encode('utf-8'))
+                print '<td>{}</td>'.format(time.strftime('%H:%M, %d %B %Y',vote[3]))
                 print '</tr>'
             print '</table>'
         print '</div>'
